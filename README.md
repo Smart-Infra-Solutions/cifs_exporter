@@ -63,6 +63,18 @@ partage en lecture seule, volume séparé pour l'état).
   `cifs_exporter_files_stale`, `cifs_exporter_files_unknown`
 - `cifs_exporter_bytes_total`, `cifs_exporter_bytes_stale`
 
+## Supervision (Prometheus / Grafana)
+
+Le dossier `monitoring/` fournit :
+- `prometheus.yml` : exemple de `scrape_configs` pour scraper `/metrics`
+  (à fusionner dans un Prometheus existant, ou utilisable tel quel pour un test local)
+- `grafana-dashboard.json` : tableau de bord Grafana prêt à importer
+  (fichiers total/utilisés/stale/inconnus, % de fichiers stale, octets
+  récupérables, état et durée des scans, évolution dans le temps). À
+  l'import, Grafana demande de sélectionner la datasource Prometheus à
+  utiliser (`DS_PROMETHEUS`). Le dashboard filtre sur le label `share` défini
+  dans `prometheus.yml` — adaptez-le si vous scrapez plusieurs partages.
+
 ## Rapport
 
 - `report.csv` : une ligne par fichier actif — `path`, `size_bytes`,

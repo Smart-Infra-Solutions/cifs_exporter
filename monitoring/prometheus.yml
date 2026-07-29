@@ -1,0 +1,23 @@
+# Exemple de configuration de scrape Prometheus pour cifs_exporter.
+#
+# Deux usages possibles :
+#   1) Fusionner le bloc `scrape_configs` ci-dessous dans un prometheus.yml existant.
+#   2) Utiliser ce fichier tel quel pour un test local :
+#        docker run -p 9090:9090 -v "$PWD/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro" prom/prometheus
+#
+# cifs_exporter ne fait qu'un scan par SCAN_INTERVAL_SECONDS (86400s / 24h par
+# défaut) : un scrape_interval de 1 à 5 minutes suffit largement, inutile de
+# scraper plus vite que les métriques ne changent.
+
+global:
+  scrape_interval: 5m
+  evaluation_interval: 5m
+
+scrape_configs:
+  - job_name: cifs_exporter
+    static_configs:
+      - targets:
+          - cifs_exporter:9877   # nom du service dans docker-compose.example.yml
+          # - localhost:9877     # exécution locale (CIFS_PATH=... python -m cifs_exporter.main)
+        labels:
+          share: partage-dfs   # à personnaliser si vous scrapez plusieurs partages/instances

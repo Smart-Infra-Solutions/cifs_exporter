@@ -1,0 +1,309 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "Datasource Prometheus qui scrape cifs_exporter (voir monitoring/prometheus.yml)",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "gauge", "name": "Gauge", "version": "" },
+    { "type": "panel", "id": "piechart", "name": "Pie chart", "version": "" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" }
+  ],
+  "id": null,
+  "uid": "cifs-exporter",
+  "title": "CIFS Exporter",
+  "description": "Usage et nettoyage d'un partage CIFS scanné par cifs_exporter",
+  "tags": ["cifs_exporter", "cifs", "storage"],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "5m",
+  "time": { "from": "now-30d", "to": "now" },
+  "schemaVersion": 39,
+  "version": 1,
+  "templating": {
+    "list": [
+      {
+        "name": "share",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "query": { "query": "label_values(cifs_exporter_files_total, share)", "refId": "share" },
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Fichiers totaux",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_files_total{share=~\"$share\"})", "refId": "A", "legendFormat": "total" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "value": null, "color": "blue" }] } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Fichiers utilisés",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_files_used{share=~\"$share\"})", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Fichiers stale (candidats nettoyage)",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_files_stale{share=~\"$share\"})", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "orange" } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Fichiers inconnus (historique insuffisant)",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_files_unknown{share=~\"$share\"})", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "gray" } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "% de fichiers stale",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "100 * sum(cifs_exporter_files_stale{share=~\"$share\"}) / sum(cifs_exporter_files_total{share=~\"$share\"})",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 20, "color": "orange" },
+              { "value": 50, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Octets récupérables",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_bytes_stale{share=~\"$share\"})", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "decbytes", "color": { "mode": "fixed", "fixedColor": "orange" } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Dernier scan terminé",
+      "gridPos": { "x": 0, "y": 4, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "max(cifs_exporter_scan_timestamp_seconds{share=~\"$share\"}) * 1000", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "dateTimeAsIso", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "value": null, "color": "blue" }] } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Durée du dernier scan",
+      "gridPos": { "x": 8, "y": 4, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "max(cifs_exporter_scan_duration_seconds{share=~\"$share\"})", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "value": null, "color": "blue" }] } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Erreurs de scan cumulées",
+      "gridPos": { "x": 16, "y": 4, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_scan_errors_total{share=~\"$share\"})", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 1, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "none", "textMode": "auto" }
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "Répartition des fichiers par statut",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_files_used{share=~\"$share\"})", "refId": "A", "legendFormat": "used" },
+        { "expr": "sum(cifs_exporter_files_stale{share=~\"$share\"})", "refId": "B", "legendFormat": "stale" },
+        { "expr": "sum(cifs_exporter_files_unknown{share=~\"$share\"})", "refId": "C", "legendFormat": "unknown" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "pieType": "donut",
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }
+      }
+    },
+    {
+      "id": 8,
+      "type": "gauge",
+      "title": "% d'octets récupérables",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum(cifs_exporter_bytes_stale{share=~\"$share\"}) / sum(cifs_exporter_bytes_total{share=~\"$share\"})",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 0.2, "color": "orange" },
+              { "value": 0.5, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Évolution des fichiers par statut",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_files_total{share=~\"$share\"})", "refId": "A", "legendFormat": "total" },
+        { "expr": "sum(cifs_exporter_files_used{share=~\"$share\"})", "refId": "B", "legendFormat": "used" },
+        { "expr": "sum(cifs_exporter_files_stale{share=~\"$share\"})", "refId": "C", "legendFormat": "stale" },
+        { "expr": "sum(cifs_exporter_files_unknown{share=~\"$share\"})", "refId": "D", "legendFormat": "unknown" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Évolution des octets (total / récupérables)",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "sum(cifs_exporter_bytes_total{share=~\"$share\"})", "refId": "A", "legendFormat": "total" },
+        { "expr": "sum(cifs_exporter_bytes_stale{share=~\"$share\"})", "refId": "B", "legendFormat": "stale" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "decbytes" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Durée des scans dans le temps",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "max(cifs_exporter_scan_duration_seconds{share=~\"$share\"})", "refId": "A", "legendFormat": "durée" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Erreurs de scan (delta sur la fenêtre affichée)",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        { "expr": "increase(cifs_exporter_scan_errors_total{share=~\"$share\"}[1d])", "refId": "A", "legendFormat": "erreurs / jour" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    }
+  ]
+}

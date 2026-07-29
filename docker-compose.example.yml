@@ -1,6 +1,5 @@
 services:
   cifs_exporter:
-    build: .
     image: cifs_exporter:latest
     restart: unless-stopped
     volumes:
@@ -22,6 +21,3 @@ services:
       # LOG_LEVEL: "INFO"
     ports:
       - "9877:9877"
-
-volumes:
-  cifs_exporter_state:
