@@ -1,0 +1,9 @@
+.git
+.gitattributes
+.claude
+__pycache__
+*.pyc
+data/
+*.db
+*.db-wal
+*.db-shm

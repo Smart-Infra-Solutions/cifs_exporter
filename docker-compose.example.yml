@@ -1,0 +1,27 @@
+services:
+  cifs_exporter:
+    build: .
+    image: cifs_exporter:latest
+    restart: unless-stopped
+    volumes:
+      # Le partage CIFS est déjà monté côté hôte (ex: mount -t cifs //serveur/partage /mnt/partage).
+      # On le bind-mount en lecture seule : ce conteneur ne doit jamais écrire dessus.
+      - /mnt/partage:/data/share:ro
+      # Volume séparé, HORS du partage CIFS, pour l'état persistant (SQLite) et les rapports.
+      - cifs_exporter_state:/data/state
+    environment:
+      CIFS_PATH: /data/share
+      STATE_DB_PATH: /data/state/state.db
+      REPORT_DIR: /data/state
+      SCAN_INTERVAL_SECONDS: "86400"
+      STALE_DAYS: "90"
+      METRICS_PORT: "9877"
+      # EXCLUDE_GLOBS: "*.tmp,~$*,Thumbs.db"
+      # FOLLOW_SYMLINKS: "false"
+      # RUN_ONCE: "false"
+      # LOG_LEVEL: "INFO"
+    ports:
+      - "9877:9877"
+
+volumes:
+  cifs_exporter_state:
