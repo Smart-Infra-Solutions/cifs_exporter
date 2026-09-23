@@ -8,8 +8,8 @@ steps:
   - name: build-and-push
     image: woodpeckerci/plugin-docker-buildx
     settings:
-      repo: smartinfrasolutions/cifs_exporter
-      username: smartinfrasolutions
+      repo: sisolutions/cifs_exporter
+      username: fsenchet
       password:
         from_secret: docker_token
       platforms: linux/amd64
