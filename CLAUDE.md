@@ -27,11 +27,11 @@ Docker:
 docker compose -f docker-compose.example.yml up -d --build
 ```
 
-CI (`.woodpecker/docker-publish.yml`) builds and pushes the image to Docker Hub as
-`smartinfrasolutions/cifs_exporter` on push to `main` (tag `latest`) and on
-`v*` tags (`auto_tag`, versioned tags + `latest`). Uses the `docker_token`
-Woodpecker secret as the Docker Hub password for the `smartinfrasolutions`
-account.
+CI (`.woodpecker/docker-publish.yml`) builds and pushes the image to GitHub Container
+Registry as `ghcr.io/smart-infra-solutions/cifs_exporter` on push to `main`
+(tag `latest`) and on `v*` tags (`auto_tag`, versioned tags + `latest`). Uses
+the `ghcr_token` Woodpecker secret (a GitHub personal access token with the
+`write:packages` scope) as the registry password for the `Ch1ch1` account.
 
 There is no test suite yet — verify changes by running two successive
 `RUN_ONCE=true` scans against a local test directory and inspecting

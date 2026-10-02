@@ -8,10 +8,11 @@ steps:
   - name: build-and-push
     image: woodpeckerci/plugin-docker-buildx
     settings:
-      repo: sisolutions/cifs_exporter
-      username: fsenchet
+      registry: ghcr.io
+      repo: ghcr.io/smart-infra-solutions/cifs_exporter
+      username: Ch1ch1
       password:
-        from_secret: docker_token
+        from_secret: ghcr_token
       platforms: linux/amd64
       dockerfile: Dockerfile
       context: .

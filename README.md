@@ -84,13 +84,13 @@ Le dossier `monitoring/` fournit :
 
 ## CI/CD
 
-Le pipeline Woodpecker (`.woodpecker/docker-publish.yml`) build l'image et la push sur Docker
-Hub sous `smartinfrasolutions/cifs_exporter` :
+Le pipeline Woodpecker (`.woodpecker/docker-publish.yml`) build l'image et la push sur GitHub
+Container Registry sous `ghcr.io/smart-infra-solutions/cifs_exporter` :
 - push sur `main` → tag `latest`
 - push d'un tag `vX.Y.Z` → tags de version (+ `latest`) via `auto_tag`
 
-Nécessite le secret Woodpecker `docker_token` (mot de passe/token du compte
-Docker Hub `smartinfrasolutions`).
+Nécessite le secret Woodpecker `ghcr_token` (personal access token GitHub du
+compte `Ch1ch1` avec le scope `write:packages`).
 
 ## Développement local
 

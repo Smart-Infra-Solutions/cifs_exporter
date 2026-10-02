@@ -1,6 +1,6 @@
 services:
   cifs_exporter:
-    image: cifs_exporter:latest
+    image: ghcr.io/smart-infra-solutions/cifs_exporter:latest
     restart: unless-stopped
     volumes:
       # Le partage CIFS est déjà monté côté hôte (ex: mount -t cifs //serveur/partage /mnt/partage).
